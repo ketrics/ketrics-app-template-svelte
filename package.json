@@ -1,0 +1,33 @@
+{
+  "name": "ketrics-app-template",
+  "version": "0.0.1",
+  "description": "Template to build Apps on Ketrics",
+  "private": true,
+  "keywords": [
+    "ketrics"
+  ],
+  "author": "Cristián Bustamante",
+  "devDependencies": {
+    "npm-run-all": "^4.1.5",
+    "rollup": "^1.17.0",
+    "rollup-plugin-commonjs": "^9.3.4",
+    "rollup-plugin-gzip": "^2.2.0",
+    "rollup-plugin-livereload": "^1.0.1",
+    "rollup-plugin-node-resolve": "^4.2.4",
+    "rollup-plugin-svelte": "^5.1.0",
+    "rollup-plugin-terser": "^4.0.4",
+    "svelte": "^3.6.10"
+  },
+  "dependencies": {
+    "ketrics-ui-svelte": "0.0.18",
+    "ketrics-utils": "^1.0.1",
+    "sirv-cli": "^0.4.4"
+  },
+  "scripts": {
+    "build": "rollup -c && rm ./build/bundle.js.map",
+    "autobuild": "rollup -c -w",
+    "dev": "run-p start:dev autobuild",
+    "start": "sirv public --single",
+    "start:dev": "sirv public --port 6030 --single --dev"
+  }
+}

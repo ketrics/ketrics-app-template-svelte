@@ -1,0 +1,9 @@
+*.env
+.DS_Store
+node_modules
+public/bundle.*
+build/bundle.js.map
+venv/
+build-ketrics/
+public/index.html
+public/config.js

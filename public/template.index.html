@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset='utf8'>
+	<meta name='viewport' content='width=device-width'>
+
+	<title>Ketrics Application</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.5/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+    <script src="config.js"></script>
+
+	<link rel='icon' type='image/png' href='/favicon.png'>
+	<link rel='stylesheet' href='/global.css'>
+	<link rel='stylesheet' href='/bundle.css'>
+</head>
+
+<body>
+    <div id="development"></div>
+
+    <script>
+        sessionStorage.setItem('ketricsApplicationId', 'development');
+        sessionStorage.setItem('dataSourceUUID', '{dataSourceUUID}');
+        localStorage.setItem('token', '{KETRICS_TOKEN}')
+    </script>
+
+	<script src='/bundle.js'
+	        ketrics-application-id="development"
+	        ketrics-application-container-id="development"
+	        ketrics-application-uuid="{applicationUUID}"
+	></script>
+</body>
+</html>
