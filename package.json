@@ -1,6 +1,6 @@
 {
   "name": "ketrics-app-template",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Template to build Apps on Ketrics",
   "private": true,
   "keywords": [
