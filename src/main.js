@@ -1,4 +1,5 @@
-import {KetricsApplication, KetricsService} from "ketrics-utils";
+import {KetricsApplication} from "ketrics-utils";
+import {CustomApiService as KetricsService} from './CustomApiService';
 import App from './App.svelte';
 
 

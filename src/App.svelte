@@ -1,30 +1,29 @@
 <script>
 	import {onMount} from 'svelte';
 	import moment from 'moment';
-	import {formatNumber} from 'ketrics-utils/Formatter'
+	import {formatNumber} from 'ketrics-utils/Formatter';
+	import {options} from './Common';
 
+	// Standard Components
     import * as Form from 'ketrics-ui-svelte/src/components/Form';
     import {Modal, Notification} from 'ketrics-ui-svelte/src/components';
+
+    // Custom Components
+    import FormCreateEdit from './components/FormCreateEdit.svelte';
+    import FormConfirmDelete from './components/FormConfirmDelete.svelte';
+    import FormProcessExcel from './components/FormProcessExcel.svelte';
 
 	export let ketricsApplication;
 	export let ketricsService;
 
-
 	let loading=false,
-	    parameters={
-	    },
-	    options={
-	    },
+	    parameters={},
 	    items=[],
 	    refs={},
-	    openForm=false,
-	    openUploadForm=false,
-	    form={},
-	    fileInput = {name:''},
 	    selected;
 
-	onMount(()=>{
-	    handleSubmit()
+	onMount(async()=>{
+	    await handleSubmit()
 	})
 
 	async function handleSubmit(){
@@ -41,7 +40,7 @@
 	async function handleSetup(){
 	    loading = true;
         try{
-            const response = await ketricsService.runHandler('setup');
+            await ketricsService.setup();
             Notification.success({message: 'Setup Successfull!'});
         }catch(error){
             Notification.error({message: error.message || 'Unhandled error!'});
@@ -49,110 +48,22 @@
         loading = false;
 	}
 
-	function handleAdd(){
-	    form = {
-	    }
-
-	    openForm=true;
-	}
-
-	function handleCloseForm(){
-	    openForm=false;
-	}
-
-	async function handleSave(){
-	    loading = true;
-        try{
-            const response = await ketricsService.runHandler('save', form);
-            let item = response.items.data[0];
-            if(form.id_operacion===null){
-                items = [item, ...items];
-            }else{
-                const index = items.findIndex(item=>item.id===form.id);
-                items[index] = item;
-            }
-            Notification.success({message: 'Item Saved!'});
-            openForm=false;
-        }catch(error){
-            Notification.error({message: error.message || 'Unhandled error!'});
-        }
-        loading = false;
-	}
-
-	function handleEdit(index){
-	    form = items[index];
-	    openForm=true;
-	}
-
-	function handleCloseUploadForm(){
-	    openUploadForm = false;
-	}
-
-	async function handleUploadFile(){
-        loading=true;
-        try{
-            const formData = new FormData();
-            formData.append('file', fileInput);
-            const data = await ketricsService.readExcel(formData);
-            await processData(data);
-        }catch(error){
-            Notification.error({message: error.message || 'Unhandled error'});
-        }
-        loading=false;
-	}
-
-    function handleChangeFile(e){
-        fileInput = e.target.files[0];
-    }
-
-    function validateObj(obj){
-	    return true;
-    }
-
-	async function processData(data){
-        let lines = data['Hoja1'].split("\n");
-        let re = /RegExp/g;
-        let headerIndex = lines.findIndex(line=>line.search(re)===1);
-        const headers = lines[headerIndex].split("|");
-
-        headers.forEach((key, index)=>{
-            headers[index] = key === "" ? "col"+index: key.toLowerCase().trim();
-        })
-
-        let newData=[];
-        lines.slice(headerIndex+1).forEach(line=>{
-            let values = line.split("|");
-            let obj = headers.reduce((obj, k, i) => ({...obj, [k]: values[i] }), {});
-
-            if(validateObj(obj)){
-                newData.push({
-
-                });
-            }
-        });
-
-        loading = true;
-        try{
-            const response = await ketricsService.runHandler('saveDetail', {
-                id: selected.id,
-                detail: newData
-            });
-            let item = response.item.data[0];
-            const index = items.findIndex(obj=>obj.id===item.id);
+	function handleItemSaved({detail: item}){
+	    const index = items.findIndex($item=>$item.id===item.id);
+	    if(index===-1){
+            items = [item, ...items];
+        }else{
             items[index] = item;
-            Notification.success({message: 'Saved!'});
-            handleCloseUploadForm();
-        }catch(error){
-            Notification.error({message: error.message || 'Unhandled error!'});
         }
-        loading = false;
-
 	}
 
-	function handleOpenUploadForm(index){
-	    selected = items[index];
-	    fileInput = {name:''};
-	    openUploadForm = true;
+    function handleItemDeleted({detail: id}){
+        items = items.filter($item=>$item.id!==id);
+	}
+
+	function handleFileProcessed({detail: item}){
+	    const index = items.findIndex($item=>$item.id===item.id);
+        items[index] = item;
 	}
 
 	$: disabled = loading ? {disabled:true}:{};
@@ -178,7 +89,6 @@
     .buttons-container .control{
         margin-right: 10px;
     }
-
 </style>
 
 <div class="app-container">
@@ -208,7 +118,7 @@
                     </div>
 
                     <div class="control">
-                        <button class="button is-success" on:click={handleAdd}>Add</button>
+                        <button class="button is-success" on:click={()=>refs.formCreateEdit.add()}>Add</button>
                     </div>
 
                     <div class="control">
@@ -236,56 +146,17 @@
 
 </div>
 
-{#if openForm}
-    <Modal onClose={handleCloseForm}>
-        <h3 class="title">Form</h3>
+<FormCreateEdit {ketricsService}
+                bind:this={refs.formCreateEdit}
+                on:itemSaved={handleItemSaved}
+/>
 
+<FormConfirmDelete {ketricsService}
+                   bind:this={refs.formDelete}
+                   on:itemDeleted={handleItemDeleted}
+/>
 
-        <div class="buttons is-right">
-            <button class="button is-info"
-                    class:is-loading={loading}
-                    {...disabled}
-                    on:click={handleSave}
-            >
-                Save
-            </button>
-        </div>
-    </Modal>
-{/if}
-
-
-{#if openUploadForm}
-    <Modal onClose={handleCloseUploadForm}>
-        <h3 class="is-3">Upload Dashboards Settings</h3>
-
-        <div class="field">
-        <div class="file is-info has-name is-fullwidth">
-            <label class="file-label">
-            <input class="file-input" type="file" name="settings" on:change={e=>handleChangeFile(e)} >
-            <span class="file-cta">
-                <span class="file-icon">
-                <i class="fas fa-upload"></i>
-                </span>
-                <span class="file-label">
-                Info file…
-                </span>
-            </span>
-            <span class="file-name">
-                {fileInput.name}
-            </span>
-            </label>
-        </div>
-        </div>
-
-        <div class="buttons is-right">
-            <span class="button is-info"
-                  class:is-loading={loading}
-                  {...disabled}
-                  on:click={handleUploadFile}
-            >
-                Upload
-            </span>
-            <span class="button" on:click={handleCloseUploadForm}>Cancel</span>
-        </div>
-    </Modal>
-{/if}
+<FormProcessExcel {ketricsService}
+                  bind:this={refs.formProcessFile}
+                  on:fileProcessed={handleFileProcessed}
+/>

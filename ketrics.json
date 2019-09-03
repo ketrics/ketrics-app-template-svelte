@@ -1,6 +1,8 @@
 {
   "entryPoint": "./build/bundle.js",
-  "scripts": {
-
+  "handlers": {
+    "fetchData": {
+      "file": "./ketrics/handlers/fetchData.js"
+    }
   }
 }
