@@ -1,8 +1,9 @@
 <script>
-	import {onMount} from 'svelte';
+	import {onMount, setContext} from 'svelte';
 	import moment from 'moment';
 	import {formatNumber} from 'ketrics-utils/Formatter';
 	import {options} from './Common';
+	import {ContextKey} from './Context';
 
 	// Standard Components
     import * as Form from 'ketrics-ui-svelte/src/components/Form';
@@ -21,6 +22,8 @@
 	    items=[],
 	    refs={},
 	    selected;
+
+	setContext(ContextKey, {});
 
 	onMount(async()=>{
 	    await handleSubmit()
