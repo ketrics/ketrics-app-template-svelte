@@ -23,7 +23,9 @@
 	    refs={},
 	    selected;
 
-	setContext(ContextKey, {});
+	setContext(ContextKey, {
+	    ketricsService
+	});
 
 	onMount(async()=>{
 	    await handleSubmit()
@@ -32,8 +34,7 @@
 	async function handleSubmit(){
 	    loading = true;
         try{
-            const response = await ketricsService.runHandler('fetchData', parameters);
-            items = response.items.data;
+            items = await ketricsService.fetchData(parameters);
         }catch(error){
             Notification.error({message: error.message || 'Unhandled error!'});
         }
